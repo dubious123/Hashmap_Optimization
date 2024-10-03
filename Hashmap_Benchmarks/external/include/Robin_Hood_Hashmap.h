@@ -3,8 +3,6 @@
 
 #include <iostream>
 #include <cassert>
-#include <random>
-#include <ranges>
 
 class robin_hood_hashmap
 {
@@ -129,7 +127,7 @@ class robin_hood_hashmap
 		return *find(key);
 	}
 
-  private:
+  public:
 	uint32_t _count;
 	uint32_t _capacity;
 	uint32_t _max_offset;
@@ -190,81 +188,65 @@ class robin_hood_hashmap
 	}
 };
 
-int main()
-{
-	std::cout << "Hello World!\n";
-
-	auto map1 = robin_hood_hashmap();
-
-	map1.insert(0, 0);
-	map1.insert(1, 1);
-	map1.insert(2, 2);
-	map1.insert(3, 3);
-
-	auto map2 = robin_hood_hashmap();
-
-	map2.insert(0, 0);
-	map2.insert(3, 3);
-	map2.insert(6, 6);
-	map2.insert(9, 9);
-	map2.insert(10, 10);
-	map2.insert(17, 17);
-	map2.insert(24, 24);
-
-	assert(*map2.find(0) == 0);
-	assert(map2[3] == 3);
-	assert(map2[6] == 6);
-	assert(map2[9] == 9);
-	assert(map2[10] == 10);
-	assert(map2[17] == 17);
-	assert(map2[24] == 24);
-
-	assert(map2.erase(0) == 0);
-	assert(map2.find(0) == nullptr);
-	assert(map2[3] == 3);
-	assert(map2[6] == 6);
-	assert(map2[9] == 9);
-	assert(map2[10] == 10);
-	assert(map2[17] == 17);
-	assert(map2[24] == 24);
-
-	assert(map2.erase(3) == 3);
-	assert(map2.find(3) == nullptr);
-	assert(map2[6] == 6);
-	assert(map2[9] == 9);
-	assert(map2[10] == 10);
-	assert(map2[17] == 17);
-	assert(map2[24] == 24);
-
-	assert(map2.erase(6) == 6);
-	assert(map2.find(6) == nullptr);
-	assert(map2[9] == 9);
-	assert(map2[10] == 10);
-	assert(map2[17] == 17);
-	assert(map2[24] == 24);
-
-	assert(map2.erase(9) == 9);
-	assert(map2.find(9) == nullptr);
-	assert(map2[10] == 10);
-	assert(map2[17] == 17);
-	assert(map2[24] == 24);
-
-
-	std::mt19937					   mersenne(19990827);
-	std::uniform_int_distribution<int> dis(0, 100);
-	robin_hood_hashmap				   map;
-
-	auto check_sum = 0;
-
-	for (int i : std::views::iota(1, 1000000))
-	{
-		auto rand = dis(mersenne);
-		map[rand] = rand;
-
-		check_sum += map[rand];
-	}
-	std::cout << check_sum;
-}
+// int main()
+//{
+//	std::cout << "Hello World!\n";
+//
+//	auto map1 = robin_hood_hashmap();
+//
+//	map1.insert(0, 0);
+//	map1.insert(1, 1);
+//	map1.insert(2, 2);
+//	map1.insert(3, 3);
+//
+//	auto map2 = robin_hood_hashmap();
+//
+//	map2.insert(0, 0);
+//	map2.insert(3, 3);
+//	map2.insert(6, 6);
+//	map2.insert(9, 9);
+//	map2.insert(10, 10);
+//	map2.insert(17, 17);
+//	map2.insert(24, 24);
+//
+//	assert(*map2.find(0) == 0);
+//	assert(map2[3] == 3);
+//	assert(map2[6] == 6);
+//	assert(map2[9] == 9);
+//	assert(map2[10] == 10);
+//	assert(map2[17] == 17);
+//	assert(map2[24] == 24);
+//
+//	assert(map2.erase(0) == 0);
+//	assert(map2.find(0) == nullptr);
+//	assert(map2[3] == 3);
+//	assert(map2[6] == 6);
+//	assert(map2[9] == 9);
+//	assert(map2[10] == 10);
+//	assert(map2[17] == 17);
+//	assert(map2[24] == 24);
+//
+//	assert(map2.erase(3) == 3);
+//	assert(map2.find(3) == nullptr);
+//	assert(map2[6] == 6);
+//	assert(map2[9] == 9);
+//	assert(map2[10] == 10);
+//	assert(map2[17] == 17);
+//	assert(map2[24] == 24);
+//
+//	assert(map2.erase(6) == 6);
+//	assert(map2.find(6) == nullptr);
+//	assert(map2[9] == 9);
+//	assert(map2[10] == 10);
+//	assert(map2[17] == 17);
+//	assert(map2[24] == 24);
+//
+//	assert(map2.erase(9) == 9);
+//	assert(map2.find(9) == nullptr);
+//	assert(map2[10] == 10);
+//	assert(map2[17] == 17);
+//	assert(map2[24] == 24);
+// }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
