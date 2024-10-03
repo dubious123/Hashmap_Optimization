@@ -3,6 +3,7 @@
 
 #pragma comment(lib, "benchmark.lib")
 #pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "RobinHood_Hashmap.lib")
 
 #include <unordered_map>
 #include <random>
@@ -11,7 +12,7 @@
 #include <chrono>
 
 #include "benchmark/benchmark.h"
-#include "Robin_Hood_Hashmap.h"
+#include "RobinHood_Hashmap.h"
 
 
 static constexpr uint64_t SEED = 19990827;
@@ -334,7 +335,7 @@ void temp_stl_robin_hood_hash_map_find(int count)
 	auto sum_for_no_opt = 0ul;
 	auto total_duration = std::chrono::nanoseconds(0);
 
-	std::mt19937					   mersenne(SEED);
+	std::mt19937					   mersenne(19990827);
 	std::uniform_int_distribution<int> dis(0, count);
 	robin_hood_hashmap				   map;
 
@@ -436,20 +437,20 @@ void temp_stl_robin_hood_hash_map_insert_extract(int iteration)
 
 int main(int argc, char** argv)
 {
-	char  arg0_default[] = "benchmark";
-	char* args_default	 = arg0_default;
-	if (!argv)
-	{
+	// char  arg0_default[] = "benchmark";
+	// char* args_default	 = arg0_default;
+	// if (!argv)
+	//{
 
-		argc = 1;
-		argv = &args_default;
-	}
-	::benchmark::Initialize(&argc, argv);
-	if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
-	::benchmark::RunSpecifiedBenchmarks();
-	::benchmark::Shutdown();
+	//	argc = 1;
+	//	argv = &args_default;
+	//}
+	//::benchmark::Initialize(&argc, argv);
+	// if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
+	//::benchmark::RunSpecifiedBenchmarks();
+	//::benchmark::Shutdown();
 
-	std::cout << check_sum << std::endl;
+	// std::cout << check_sum << std::endl;
 
 
 	std::cout << "\ntemp_stl_unordered_map find\n"
@@ -474,8 +475,8 @@ int main(int argc, char** argv)
 	temp_stl_robin_hood_hash_map_find(100);
 	temp_stl_robin_hood_hash_map_find(1000);
 	temp_stl_robin_hood_hash_map_find(10'000);
-	// temp_stl_robin_hood_hash_map_find(100'000);
-	//   temp_stl_robin_hood_hash_map_find(1'000'000);
+	temp_stl_robin_hood_hash_map_find(100'000);
+	temp_stl_robin_hood_hash_map_find(1'000'000);
 
 	std::cout << "\ntemp_stl_robin_hood_hash_map insert_extract\n"
 			  << std::endl;
@@ -483,8 +484,8 @@ int main(int argc, char** argv)
 	temp_stl_robin_hood_hash_map_insert_extract(100);
 	temp_stl_robin_hood_hash_map_insert_extract(1000);
 	temp_stl_robin_hood_hash_map_insert_extract(10'000);
-	// temp_stl_robin_hood_hash_map_insert_extract(100'000);
-	//   temp_stl_robin_hood_hash_map_insert_extract(1'000'000);
+	temp_stl_robin_hood_hash_map_insert_extract(100'000);
+	temp_stl_robin_hood_hash_map_insert_extract(1'000'000);
 
 
 	return 0;
