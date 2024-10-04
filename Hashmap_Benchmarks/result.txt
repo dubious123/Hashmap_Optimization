@@ -1,0 +1,60 @@
+std insert test it_num : 100 : | total_duration : 20000ns, iteration num : 100, mean : 200ns 
+rh insert test it_num : 100 : | total_duration : 13600ns, iteration num : 100, mean : 136ns 
+std find true test it_num : 100 : | total_duration : 7100ns, iteration num : 100, mean : 71ns 
+rh find true test it_num : 100 : | total_duration : 2300ns, iteration num : 100, mean : 23ns 
+std find false test it_num : 100 : | total_duration : 600ns, iteration num : 100, mean : 6ns 
+rh find false test it_num : 100 : | total_duration : 2800ns, iteration num : 100, mean : 28ns 
+std 50% insert 50% erase it_num : 100 : | total_duration : 10100ns, iteration num : 100, mean : 101ns 
+rh 50% insert 50% erase it_num : 100 : | total_duration : 3900ns, iteration num : 100, mean : 39ns 
+std 10% insert 10% erase 40% false find 40% true find it_num : 100 : | total_duration : 6900ns, iteration num : 100, mean : 69ns 
+rh 10% insert 10% erase 40% false find 40% true find it_num : 100 : | total_duration : 3500ns, iteration num : 100, mean : 35ns 
+std remove all test it_num : 100 : | total_duration : 7100ns, iteration num : 100, mean : 71ns 
+rh remove all test it_num : 100 : | total_duration : 3300ns, iteration num : 100, mean : 33ns 
+std insert test it_num : 1000 : | total_duration : 92800ns, iteration num : 1000, mean : 92.8ns 
+rh insert test it_num : 1000 : | total_duration : 73900ns, iteration num : 1000, mean : 73.9ns 
+std find true test it_num : 1000 : | total_duration : 39800ns, iteration num : 1000, mean : 39.8ns 
+rh find true test it_num : 1000 : | total_duration : 19300ns, iteration num : 1000, mean : 19.3ns 
+std find false test it_num : 1000 : | total_duration : 4600ns, iteration num : 1000, mean : 4.6ns 
+rh find false test it_num : 1000 : | total_duration : 32300ns, iteration num : 1000, mean : 32.3ns 
+std 50% insert 50% erase it_num : 1000 : | total_duration : 103500ns, iteration num : 1000, mean : 103.5ns 
+rh 50% insert 50% erase it_num : 1000 : | total_duration : 55700ns, iteration num : 1000, mean : 55.7ns 
+std 10% insert 10% erase 40% false find 40% true find it_num : 1000 : | total_duration : 39800ns, iteration num : 1000, mean : 39.8ns 
+rh 10% insert 10% erase 40% false find 40% true find it_num : 1000 : | total_duration : 30800ns, iteration num : 1000, mean : 30.8ns 
+std remove all test it_num : 1000 : | total_duration : 48500ns, iteration num : 1000, mean : 48.5ns 
+rh remove all test it_num : 1000 : | total_duration : 29600ns, iteration num : 1000, mean : 29.6ns 
+std insert test it_num : 10000 : | total_duration : 819400ns, iteration num : 10000, mean : 81.94ns 
+rh insert test it_num : 10000 : | total_duration : 646700ns, iteration num : 10000, mean : 64.67ns 
+std find true test it_num : 10000 : | total_duration : 414400ns, iteration num : 10000, mean : 41.44ns 
+rh find true test it_num : 10000 : | total_duration : 418800ns, iteration num : 10000, mean : 41.88ns 
+std find false test it_num : 10000 : | total_duration : 116600ns, iteration num : 10000, mean : 11.66ns 
+rh find false test it_num : 10000 : | total_duration : 309600ns, iteration num : 10000, mean : 30.96ns 
+std 50% insert 50% erase it_num : 10000 : | total_duration : 789900ns, iteration num : 10000, mean : 78.99ns 
+rh 50% insert 50% erase it_num : 10000 : | total_duration : 631600ns, iteration num : 10000, mean : 63.16ns 
+std 10% insert 10% erase 40% false find 40% true find it_num : 10000 : | total_duration : 413200ns, iteration num : 10000, mean : 41.32ns 
+rh 10% insert 10% erase 40% false find 40% true find it_num : 10000 : | total_duration : 397500ns, iteration num : 10000, mean : 39.75ns 
+std remove all test it_num : 10000 : | total_duration : 380000ns, iteration num : 10000, mean : 38ns 
+rh remove all test it_num : 10000 : | total_duration : 350300ns, iteration num : 10000, mean : 35.03ns 
+std insert test it_num : 100000 : | total_duration : 8651600ns, iteration num : 100000, mean : 86.516ns 
+rh insert test it_num : 100000 : | total_duration : 7748800ns, iteration num : 100000, mean : 77.488ns 
+std find true test it_num : 100000 : | total_duration : 2819900ns, iteration num : 100000, mean : 28.199ns 
+rh find true test it_num : 100000 : | total_duration : 5452200ns, iteration num : 100000, mean : 54.522ns 
+std find false test it_num : 100000 : | total_duration : 1958300ns, iteration num : 100000, mean : 19.583ns 
+rh find false test it_num : 100000 : | total_duration : 8077900ns, iteration num : 100000, mean : 80.779ns 
+std 50% insert 50% erase it_num : 100000 : | total_duration : 7000600ns, iteration num : 100000, mean : 70.006ns 
+rh 50% insert 50% erase it_num : 100000 : | total_duration : 6948100ns, iteration num : 100000, mean : 69.481ns 
+std 10% insert 10% erase 40% false find 40% true find it_num : 100000 : | total_duration : 3940300ns, iteration num : 100000, mean : 39.403ns 
+rh 10% insert 10% erase 40% false find 40% true find it_num : 100000 : | total_duration : 7643100ns, iteration num : 100000, mean : 76.431ns 
+std remove all test it_num : 100000 : | total_duration : 4891800ns, iteration num : 100000, mean : 48.918ns 
+rh remove all test it_num : 100000 : | total_duration : 6815400ns, iteration num : 100000, mean : 68.154ns 
+std insert test it_num : 1000000 : | total_duration : 105390100ns, iteration num : 1000000, mean : 105.39ns 
+rh insert test it_num : 1000000 : | total_duration : 93069700ns, iteration num : 1000000, mean : 93.0697ns 
+std find true test it_num : 1000000 : | total_duration : 22719100ns, iteration num : 1000000, mean : 22.7191ns 
+rh find true test it_num : 1000000 : | total_duration : 44512500ns, iteration num : 1000000, mean : 44.5125ns 
+std find false test it_num : 1000000 : | total_duration : 37555300ns, iteration num : 1000000, mean : 37.5553ns 
+rh find false test it_num : 1000000 : | total_duration : 47740700ns, iteration num : 1000000, mean : 47.7407ns 
+std 50% insert 50% erase it_num : 1000000 : | total_duration : 86202200ns, iteration num : 1000000, mean : 86.2022ns 
+rh 50% insert 50% erase it_num : 1000000 : | total_duration : 71887300ns, iteration num : 1000000, mean : 71.8873ns 
+std 10% insert 10% erase 40% false find 40% true find it_num : 1000000 : | total_duration : 54228300ns, iteration num : 1000000, mean : 54.2283ns 
+rh 10% insert 10% erase 40% false find 40% true find it_num : 1000000 : | total_duration : 55888300ns, iteration num : 1000000, mean : 55.8883ns 
+std remove all test it_num : 1000000 : | total_duration : 62513500ns, iteration num : 1000000, mean : 62.5135ns 
+rh remove all test it_num : 1000000 : | total_duration : 50605600ns, iteration num : 1000000, mean : 50.6056ns 
