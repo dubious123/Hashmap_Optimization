@@ -13,13 +13,63 @@ robin_hood_hashmap::~robin_hood_hashmap()
 	free(_buckets);
 }
 
+robin_hood_hashmap::robin_hood_hashmap(const robin_hood_hashmap& other)
+{
+	_count		= other._count;
+	_capacity	= other._capacity;
+	_max_offset = other._max_offset;
+	_buckets	= (bucket*)calloc(_capacity, sizeof(bucket));
+	memcpy(_buckets, other._buckets, _capacity * sizeof(bucket));	 // todo
+}
+
+robin_hood_hashmap& robin_hood_hashmap::operator=(const robin_hood_hashmap& other)
+{
+	if (this != &other)
+	{
+		realloc(_buckets, other._capacity * sizeof(bucket));	// todo
+		memcpy(_buckets, other._buckets, other._capacity * sizeof(bucket));
+
+		_count		= other._count;
+		_capacity	= other._capacity;
+		_max_offset = other._max_offset;
+	}
+
+	return *this;
+}
+
+robin_hood_hashmap::robin_hood_hashmap(robin_hood_hashmap&& other) noexcept
+{
+	_count		   = other._count;
+	_capacity	   = other._capacity;
+	_max_offset	   = other._max_offset;
+	_buckets	   = other._buckets;
+	other._buckets = nullptr;
+}
+
+robin_hood_hashmap& robin_hood_hashmap::operator=(robin_hood_hashmap&& other) noexcept
+{
+	if (this != &other)
+	{
+		realloc(_buckets, other._capacity * sizeof(bucket));	// todo
+		memcpy(_buckets, other._buckets, other._capacity * sizeof(bucket));
+
+		_count		= other._count;
+		_capacity	= other._capacity;
+		_max_offset = other._max_offset;
+
+		other._buckets = nullptr;
+	}
+
+	return *this;
+}
+
 void robin_hood_hashmap::clear()
 {
 	memset(_buckets, 0, sizeof(bucket) * _capacity);
 	_count = 0;
 }
 
-int32_t robin_hood_hashmap::count() const
+uint32_t robin_hood_hashmap::count() const
 {
 	return _count;
 }
@@ -35,7 +85,7 @@ void robin_hood_hashmap::insert(uint64_t key, uint64_t value)
 	++_count;
 }
 
-uint64_t* robin_hood_hashmap::find(uint64_t key)
+uint64_t* robin_hood_hashmap::find(uint64_t key) const
 {
 	auto home	= key % _capacity;
 	auto offset = 1;
@@ -64,26 +114,28 @@ uint64_t robin_hood_hashmap::erase(uint64_t key)
 	auto home	= key % _capacity;
 	auto offset = 1;
 	auto idx	= (home + offset - 1) % _capacity;
-	auto result = 0;
+	auto result = (decltype(key))0;
 	// find
 	for (idx = (home + offset - 1) % _capacity; offset <= _capacity; idx = (idx + 1) % _capacity)	 // todo
 	{
+		if (_buckets[idx].offset < offset)															 // bucket is empty or found other 'home'
+		{
+			return -1;
+		}
+
 		if (_buckets[idx].key == key)
 		{
 			result = _buckets[idx].value;
 			break;
 		}
 
-		if (_buckets[idx].offset < offset)	  // bucket is empty or found other 'home'
-		{
-			return -1;
-		}
+		++offset;
 	}
 
 	for (;; idx = (idx + 1) % _capacity)
 	{
 		auto& next_bucket = _buckets[(idx + 1) % _capacity];
-		if (next_bucket.offset < 2)	   // bucket is empty or home
+		if (next_bucket.offset < 2)	   // next bucket is empty or home
 		{
 			_buckets[idx].offset = 0;
 			break;
