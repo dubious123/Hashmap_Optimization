@@ -23,5 +23,11 @@
     <ClInclude Include="..\external\include\RobinHood_Hashmap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="sfc64.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="__msvc_int128.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

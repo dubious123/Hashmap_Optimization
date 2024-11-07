@@ -69,7 +69,7 @@ void robin_hood_hashmap::clear()
 	_count = 0;
 }
 
-uint32_t robin_hood_hashmap::count() const
+uint32_t robin_hood_hashmap::size() const
 {
 	return _count;
 }

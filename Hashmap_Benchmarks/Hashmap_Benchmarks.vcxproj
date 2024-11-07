@@ -145,6 +145,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\external\include\RobinHood_Hashmap.h" />
+    <ClInclude Include="sfc64.h" />
+    <ClInclude Include="__msvc_int128.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

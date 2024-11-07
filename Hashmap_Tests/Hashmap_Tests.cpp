@@ -59,7 +59,7 @@
 template <typename K, typename V>
 bool static test_count(auto& test_map, std::unordered_map<K, V>& ref_map)
 {
-	return test_map.count() == ref_map.size();
+	return test_map.size() == ref_map.size();
 }
 
 // test insert
@@ -78,7 +78,7 @@ bool static test_insert(K key, V value, auto& test_map, std::unordered_map<K, V>
 	test_map.insert(key, value);
 
 	res &= (test_map[key] == value);
-	res &= test_map.count() == ref_map.size();
+	res &= test_map.size() == ref_map.size();
 
 	return res;
 }
@@ -103,7 +103,7 @@ bool static test_erase(K key, auto& test_map, std::unordered_map<K, V>& ref_map)
 
 	res &= test_value == ref_value;
 	assert(res);
-	res &= test_map.count() == ref_map.size();
+	res &= test_map.size() == ref_map.size();
 	assert(res);
 	res &= test_map.find(test_value) == nullptr;	// assume find is valid
 	assert(res);
@@ -140,7 +140,7 @@ bool static test_find(K key, auto& test_map, std::unordered_map<K, V>& ref_map)
 		res &= *test_pvalue == ref_map[key];
 	}
 
-	res &= test_map.count() == ref_map.size();
+	res &= test_map.size() == ref_map.size();
 	return res;
 }
 
@@ -162,7 +162,7 @@ bool static test_index_operator(K key, V value, auto& test_map, std::unordered_m
 	auto* test_pvalue = (V*)nullptr;
 
 	res &= test_value == ref_value;
-	res &= test_map.count() == ref_map.size();
+	res &= test_map.size() == ref_map.size();
 
 	ref_map[key]  = value;
 	test_map[key] = value;
@@ -181,7 +181,7 @@ bool static test_clear(auto& test_map, std::unordered_map<K, V>& ref_map)
 	auto res = true;
 	ref_map.clear();
 	test_map.clear();
-	res &= test_map.count() == ref_map.size();
+	res &= test_map.size() == ref_map.size();
 	return res;
 }
 
@@ -268,7 +268,7 @@ void run_test_robinhood_det()
 	auto	   seed	   = 19990827;
 	auto	   gen	   = std::mt19937(seed);
 	auto	   dist	   = std::uniform_int_distribution<uint64_t>(0, 0xffff'ffff'ffff'ffff);
-	const auto it_nums = { 100, 1'000, 10'000, 100'000, 1'000'000 /*, 10'000'000*/ /*, 100'000'000, 1'000'000'000*/ };
+	const auto it_nums = { 100, 1'000, 10'000, 100'000, 1'000'000 /*, 1'000'000'000 */ /*, 10'000'000*/ /*, 100'000'000, */ };
 	LOG("deterministic test start, seed : {}", seed)
 	std::ranges::for_each(it_nums, [&](auto it_num) {
 		LOG("it_num : {} test start", it_num)
@@ -524,6 +524,14 @@ int main()
 
 	run_test_robinhood_det();
 	run_test_robinhood_rand();
+
+	auto map2 = robin_hood_hashmap();
+	for (uint64_t i = 0; i < 100000000; ++i)
+	{
+		map2[i] = i;
+	}
+
+	map2.clear();
 	//  auto check_sum = 0;
 
 	// for (int i : std::views::iota(1, 100'000))

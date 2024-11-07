@@ -19,7 +19,7 @@ struct robin_hood_hashmap
 
 	void clear();
 
-	uint32_t count() const;
+	uint32_t size() const;
 
 	void insert(uint64_t key, uint64_t value);
 
