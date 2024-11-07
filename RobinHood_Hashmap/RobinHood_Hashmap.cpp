@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cmath>
 
-robin_hood_hashmap::robin_hood_hashmap(uint32_t capacity) : _count(0), _capacity(capacity), _max_offset(_capacity / 4 + 1)
+robin_hood_hashmap::robin_hood_hashmap(uint32_t capacity) : _count(0), _capacity(capacity), _max_offset(std::log2(capacity)), _bit_mask(((1ull << _max_offset) - 1))
 {
 	_buckets = (bucket*)calloc(capacity, sizeof(bucket));
 }
@@ -18,6 +18,7 @@ robin_hood_hashmap::robin_hood_hashmap(const robin_hood_hashmap& other)
 	_count		= other._count;
 	_capacity	= other._capacity;
 	_max_offset = other._max_offset;
+	_bit_mask	= other._bit_mask;
 	_buckets	= (bucket*)calloc(_capacity, sizeof(bucket));
 	memcpy(_buckets, other._buckets, _capacity * sizeof(bucket));	 // todo
 }
@@ -32,6 +33,7 @@ robin_hood_hashmap& robin_hood_hashmap::operator=(const robin_hood_hashmap& othe
 		_count		= other._count;
 		_capacity	= other._capacity;
 		_max_offset = other._max_offset;
+		_bit_mask	= other._bit_mask;
 	}
 
 	return *this;
@@ -42,6 +44,7 @@ robin_hood_hashmap::robin_hood_hashmap(robin_hood_hashmap&& other) noexcept
 	_count		   = other._count;
 	_capacity	   = other._capacity;
 	_max_offset	   = other._max_offset;
+	_bit_mask	   = other._bit_mask;
 	_buckets	   = other._buckets;
 	other._buckets = nullptr;
 }
@@ -56,6 +59,7 @@ robin_hood_hashmap& robin_hood_hashmap::operator=(robin_hood_hashmap&& other) no
 		_count		= other._count;
 		_capacity	= other._capacity;
 		_max_offset = other._max_offset;
+		_bit_mask	= other._bit_mask;
 
 		other._buckets = nullptr;
 	}
@@ -81,17 +85,17 @@ void robin_hood_hashmap::insert(uint64_t key, uint64_t value)
 		_resize();
 	}
 
-	_insert({ .key = key, .value = value, .home = (uint32_t)key % _capacity, .offset = 1 });
+	_insert({ .key = key, .value = value, .home = (uint32_t)(key & _bit_mask), .offset = 1 });
 	++_count;
 }
 
 uint64_t* robin_hood_hashmap::find(uint64_t key) const
 {
-	auto home	= key % _capacity;
+	auto home	= key & _bit_mask;
 	auto offset = 1;
-	auto idx	= (home + offset - 1) % _capacity;
+	auto idx	= (home + offset - 1) & _bit_mask;
 
-	for (idx = (home + offset - 1) % _capacity; offset <= _capacity; idx = (idx + 1) % _capacity)	 // todo
+	for (idx = (home + offset - 1) & _bit_mask; offset <= _capacity; idx = (idx + 1) & _bit_mask)	 // todo
 	{
 		if (_buckets[idx].offset < offset)															 // bucket is empty or found other 'home'
 		{
@@ -111,12 +115,12 @@ uint64_t* robin_hood_hashmap::find(uint64_t key) const
 
 uint64_t robin_hood_hashmap::erase(uint64_t key)
 {
-	auto home	= key % _capacity;
+	auto home	= key & _bit_mask;
 	auto offset = 1;
-	auto idx	= (home + offset - 1) % _capacity;
+	auto idx	= (home + offset - 1) & _bit_mask;
 	auto result = (decltype(key))0;
 	// find
-	for (idx = (home + offset - 1) % _capacity; offset <= _capacity; idx = (idx + 1) % _capacity)	 // todo
+	for (idx = (home + offset - 1) & _bit_mask; offset <= _capacity; idx = (idx + 1) & _bit_mask)	 // todo
 	{
 		if (_buckets[idx].offset < offset)															 // bucket is empty or found other 'home'
 		{
@@ -132,9 +136,9 @@ uint64_t robin_hood_hashmap::erase(uint64_t key)
 		++offset;
 	}
 
-	for (;; idx = (idx + 1) % _capacity)
+	for (;; idx = (idx + 1) & _bit_mask)
 	{
-		auto& next_bucket = _buckets[(idx + 1) % _capacity];
+		auto& next_bucket = _buckets[(idx + 1) & _bit_mask];
 		if (next_bucket.offset < 2)	   // next bucket is empty or home
 		{
 			_buckets[idx].offset = 0;
@@ -170,13 +174,14 @@ void robin_hood_hashmap::_resize()
 	//_count		= 0;
 	_capacity	= _capacity << 1;	 // todo
 	_max_offset = std::log2(_capacity);
+	_bit_mask	= (1 << _max_offset) - 1;
 	_buckets	= (bucket*)calloc(_capacity, sizeof(bucket));
 
 	for (int i = 0; i < _backup_capacity; ++i)
 	{
 		if (_backup_buckets[i].empty() == false)
 		{
-			_insert({ .key = _backup_buckets[i].key, .value = _backup_buckets[i].value, .home = (uint32_t)_backup_buckets[i].key % _capacity, .offset = 1 });
+			_insert({ .key = _backup_buckets[i].key, .value = _backup_buckets[i].value, .home = (uint32_t)((_backup_buckets[i].key & _bit_mask)), .offset = 1 });
 		}
 	}
 
@@ -188,12 +193,12 @@ void robin_hood_hashmap::_insert(const bucket&& bkt)
 	if (bkt.offset > _max_offset)
 	{
 		_resize();
-		_insert({ .key = bkt.key, .value = bkt.value, .home = (uint32_t)bkt.key % _capacity, .offset = 1 });
+		_insert({ .key = bkt.key, .value = bkt.value, .home = (uint32_t)(bkt.key & _bit_mask), .offset = 1 });
 		return;
 	}
 
 
-	auto idx = (bkt.home + bkt.offset - 1) % _capacity;
+	auto idx = (bkt.home + bkt.offset - 1) & _bit_mask;
 	assert(bkt.home < _capacity);
 
 	if (_buckets[idx].empty() or _buckets[idx].key == bkt.key)

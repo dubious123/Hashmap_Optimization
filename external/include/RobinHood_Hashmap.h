@@ -46,5 +46,6 @@ struct robin_hood_hashmap
 	uint32_t _count;
 	uint32_t _capacity;
 	uint32_t _max_offset;
+	uint32_t _bit_mask;
 	bucket*	 _buckets;
 };

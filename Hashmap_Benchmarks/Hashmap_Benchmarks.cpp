@@ -24,12 +24,14 @@
 #include "RobinHood_Hashmap.h"
 #include "sfc64.h"
 
+#define RUN_100M
+#define RUN_FIND
+
+#define INSERT_NUM 100'000'000
+#define FIND_NUM   500'000'000
 
 static constexpr uint64_t SEED	= 19990827;
 static constexpr uint64_t SEED2 = 2020024357;
-
-
-static constexpr auto it_amount = 1'000'000;
 
 auto results = std::vector<uint64_t>();
 
@@ -53,14 +55,6 @@ void append_to_file(std::string path, std::string str)
 	}
 }
 
-// 1. init
-// 2. copy
-// 3. remove all
-// 4. insert/remove (7 : 3)
-// 5. insert/remove (3 : 7)
-// 6. find (contain 100)
-// 7. find (false 100)
-//
 auto run_benchmark(auto benchmark_name, auto expected_result, auto lambda_to_benchmark, auto lambda_actual_result)
 {
 	std::cout << "running " << benchmark_name << std::endl;
@@ -84,42 +78,12 @@ auto run_benchmark(auto benchmark_name, auto expected_result, auto lambda_to_ben
 	return duration;
 }
 
-auto generate_unique_set(auto dist, auto gen, size_t size)
-{
-	auto set = std::unordered_set<uint64_t>();
-	while (set.size() < size)
-	{
-		auto rand = dist(gen);
-		if (set.contains(rand) == false)
-		{
-			set.insert(rand);
-		}
-	}
-
-	return set;
-}
-
-auto generate_false_key_set(auto dist, auto gen, size_t size, auto& ref_set)
-{
-	auto set = std::unordered_set<uint64_t>();
-	while (set.size() < size)
-	{
-		auto rand = dist(gen);
-		if (ref_set.contains(rand) == false)
-		{
-			set.insert(rand);
-		}
-	}
-
-	return set;
-}
-
 void run_benchmark_insert_100M(auto& map)
 {
 	auto rng = sfc64(SEED);
 	run_benchmark(
 		std::format("insert and access 100M"), 100'000'000, [&]() {
-			for (int i = 0; i < 100'000'000; ++i)
+			for (int i = 0; i < INSERT_NUM; ++i)
 			{
 				map[rng()];
 				//map[i];
@@ -134,7 +98,7 @@ void run_benchmark_remove_100M(auto& map)
 	auto rng = sfc64(SEED);
 	run_benchmark(
 		std::format("remove 100M"), 0, [&]() {
-			for (int i = 0; i < 100'000'000; ++i)
+			for (int i = 0; i < INSERT_NUM; ++i)
 			{
 				map.erase(rng());
 			} },
@@ -574,10 +538,6 @@ void run_benchmark_rbh_find_T0(int element, int attempts, uint64_t expected)
 		});
 }
 
-#define RUN_100M
-
-#define RUN_FIND
-
 void write_csv()
 {
 	auto csv_file_name = "result.txt";
@@ -663,11 +623,11 @@ int main(int argc, char** argv)
 // find
 #ifdef RUN_FIND
 	auto arr = std::initializer_list {
-		std::tuple { 100, 500'000'000, std::tuple { (uint64_t)(-823732416), (uint64_t)(-2007611776), (uint64_t)(-1800003584), 491358464ull, 0ull } },
-		std::tuple { 1'000, 500'000'000, std::tuple { (uint64_t)(-684335648), (uint64_t)(-1702198016), (uint64_t)(-279168224), 1358626944ull, 0ull } },
-		std::tuple { 10'000, 500'000'000, std::tuple { (uint64_t)(-1988223392), (uint64_t)(-1609478832), (uint64_t)(-1417668720), 285206672ull, 0ull } },
-		std::tuple { 100'000, 500'000'000, std::tuple { (uint64_t)(-3083696), (uint64_t)(1880945216), (uint64_t)(148945576), (uint64_t)(-56941704), 0ull } },
-		std::tuple { 1'000'000, 500'000'000, std::tuple { (uint64_t)(659887280), (uint64_t)(-186988160), (uint64_t)(446733096), (uint64_t)(-910845912), 0ull } }
+		std::tuple { 100, FIND_NUM, std::tuple { (uint64_t)(-823732416), (uint64_t)(-2007611776), (uint64_t)(-1800003584), 491358464ull, 0ull } },
+		std::tuple { 1'000, FIND_NUM, std::tuple { (uint64_t)(-684335648), (uint64_t)(-1702198016), (uint64_t)(-279168224), 1358626944ull, 0ull } },
+		std::tuple { 10'000, FIND_NUM, std::tuple { (uint64_t)(-1988223392), (uint64_t)(-1609478832), (uint64_t)(-1417668720), 285206672ull, 0ull } },
+		std::tuple { 100'000, FIND_NUM, std::tuple { (uint64_t)(-3083696), (uint64_t)(1880945216), (uint64_t)(148945576), (uint64_t)(-56941704), 0ull } },
+		std::tuple { 1'000'000, FIND_NUM, std::tuple { (uint64_t)(659887280), (uint64_t)(-186988160), (uint64_t)(446733096), (uint64_t)(-910845912), 0ull } }
 	};
 
 	for (auto [element, attempts, expected_tpl] : arr)
