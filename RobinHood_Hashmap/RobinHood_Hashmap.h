@@ -3,6 +3,7 @@
 struct robin_hood_hashmap
 {
 	struct bucket;
+	struct key_value_pair;
 
 	robin_hood_hashmap(uint32_t capacity = (1 << 2));
 
@@ -31,7 +32,9 @@ struct robin_hood_hashmap
 
 	void _resize();
 
-	void _insert(const bucket&& bkt);
+	void _insert(const uint64_t& key, const uint64_t& value);
+
+	using header_type = uint16_t;
 
 	struct bucket
 	{
@@ -43,9 +46,15 @@ struct robin_hood_hashmap
 		bool empty() const;
 	};
 
+	struct key_value_pair
+	{
+		uint64_t key;
+		uint64_t value;
+	};
+
 	uint32_t _count;
 	uint32_t _capacity;
 	uint32_t _max_offset;
 	uint32_t _bit_mask;
-	bucket*	 _buckets;
+	void*	 _memory;
 };
