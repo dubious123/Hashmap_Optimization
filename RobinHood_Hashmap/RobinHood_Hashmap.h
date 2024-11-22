@@ -1,11 +1,12 @@
 #include <stdint.h>
+#include <immintrin.h>
 
 struct robin_hood_hashmap
 {
 	struct bucket;
 	struct key_value_pair;
 
-	robin_hood_hashmap(uint32_t capacity = (1 << 2));
+	robin_hood_hashmap(uint32_t capacity = (1 << 5));
 
 	~robin_hood_hashmap();
 
@@ -33,6 +34,12 @@ struct robin_hood_hashmap
 	void _resize();
 
 	void _insert(const uint64_t& key, const uint64_t& value);
+
+	key_value_pair* _key_value_entry_ptr(auto nth_mem_block, auto idx) const;
+
+	key_value_pair* _find_key_value_pair(auto& key, __m256i&& needle_cmp_res, auto nth_header_block) const;
+
+	key_value_pair* _find_key_value_pair_second(auto& key, __m256i&& needle_cmp_res, auto nth_header_block) const;
 
 	using header_type = uint16_t;
 

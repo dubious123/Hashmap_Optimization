@@ -268,7 +268,7 @@ void run_test_robinhood_det()
 	auto	   seed	   = 19990827;
 	auto	   gen	   = std::mt19937(seed);
 	auto	   dist	   = std::uniform_int_distribution<uint64_t>(0, 0xffff'ffff'ffff'ffff);
-	const auto it_nums = { 100, 1'000, 10'000, 100'000, 1'000'000 /*, 1'000'000'000 */ /*, 10'000'000*/ /*, 100'000'000, */ };
+	const auto it_nums = { 33, 1'000, 10'000, 100'000, 1'000'000 /*, 1'000'000'000 */ /*, 10'000'000*/ /*, 100'000'000, */ };
 	LOG("deterministic test start, seed : {}", seed)
 	std::ranges::for_each(it_nums, [&](auto it_num) {
 		LOG("it_num : {} test start", it_num)
@@ -485,10 +485,19 @@ void run_test_robinhood_rand()
 	LOG("Scenario 2 pass");
 }
 
+struct em
+{
+	em(uint64_t a) : sa(log2(a))
+	{
+	}
+
+	uint64_t sa;
+};
+
 int main()
 {
 	std::cout << "Hello World!\n";
-
+	auto sss = em(0);
 
 	robin_hood_hashmap					   map;
 	std::unordered_map<uint64_t, uint64_t> ref_map;
@@ -525,14 +534,14 @@ int main()
 	run_test_robinhood_det();
 	run_test_robinhood_rand();
 
-	auto map2 = robin_hood_hashmap();
-	for (uint64_t i = 0; i < 100000000; ++i)
-	{
-		map2[i] = i;
-	}
+	// auto map2 = robin_hood_hashmap();
+	// for (uint64_t i = 0; i < 100000000; ++i)
+	//{
+	//	map2[i] = i;
+	// }
 
-	map2.clear();
-	//  auto check_sum = 0;
+	// map2.clear();
+	//   auto check_sum = 0;
 
 	// for (int i : std::views::iota(1, 100'000))
 	//{
