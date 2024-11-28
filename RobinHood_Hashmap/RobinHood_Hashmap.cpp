@@ -3,7 +3,6 @@
 #include "RobinHood_Hashmap.h"
 
 // todo valid bit -> most significant bit (resize opt)
-
 constexpr const auto UINT_SIZE = sizeof(robin_hood_hashmap::header_type) + sizeof(robin_hood_hashmap::key_value_pair);
 
 constexpr const auto MEM_BLOCK_SIZE = ((sizeof(__m256i) << 1) + (sizeof(robin_hood_hashmap::key_value_pair) << 5));
@@ -222,7 +221,7 @@ void robin_hood_hashmap::insert(uint64_t key, uint64_t value)
 		if (empty_idx == 32)
 		{
 			_resize();
-			insert(key, value);
+			_insert_new(key, value);
 			return;
 		}
 	}
@@ -326,7 +325,7 @@ void robin_hood_hashmap::_resize()
 		while (not_empty_idx < 16)
 		{
 			auto* pair_ptr = (key_value_pair*)((uint8_t*)_backup_memory + i * MEM_BLOCK_SIZE + 64) + not_empty_idx;
-			insert(pair_ptr->key, pair_ptr->value);
+			_insert_new(pair_ptr->key, pair_ptr->value);
 			*((uint16_t*)&haystack + not_empty_idx) = (uint16_t)0;
 
 			cmp_res		  = _mm256_cmpeq_epi16(haystack, _mm256_set1_epi16(1));
@@ -339,7 +338,7 @@ void robin_hood_hashmap::_resize()
 		while (not_empty_idx < 16)
 		{
 			auto* pair_ptr = (key_value_pair*)((uint8_t*)_backup_memory + i * MEM_BLOCK_SIZE + 64) + not_empty_idx + 16;
-			insert(pair_ptr->key, pair_ptr->value);
+			_insert_new(pair_ptr->key, pair_ptr->value);
 			*((uint16_t*)&haystack + not_empty_idx) = (uint16_t)0;
 
 			cmp_res		  = _mm256_cmpeq_epi16(haystack, _mm256_set1_epi16(1));
@@ -349,6 +348,37 @@ void robin_hood_hashmap::_resize()
 
 	_count = _backup_size;
 	free(_backup_memory);
+}
+
+void robin_hood_hashmap::_insert_new(uint64_t key, uint64_t value)
+{
+	auto  home				   = key & _bit_mask;
+	auto  home_index		   = home & 0x1f;
+	auto  nth_header_block	   = home >> 5;
+	auto* header_block_address = (__m256i*)((uint8_t*)_memory + nth_header_block * MEM_BLOCK_SIZE);
+
+	auto cmp_res   = _mm256_cmpeq_epi16(*header_block_address, _mm256_setzero_si256());
+	auto empty_idx = get_first_byte_index(cmp_res) >> 1;
+
+	if (empty_idx == 16)
+	{
+		// check header 16~31
+		cmp_res	  = _mm256_cmpeq_epi16(*(header_block_address + 1), _mm256_setzero_si256());
+		empty_idx = 16 + (get_first_byte_index(cmp_res) >> 1);
+		if (empty_idx == 32)
+		{
+			_resize();
+			insert(key, value);
+			return;
+		}
+	}
+
+	*((uint16_t*)(header_block_address) + empty_idx) = make_header(empty_idx - home_index, key, 1);
+
+	auto* key_value_ptr	 = (key_value_pair*)(header_block_address + 2) + empty_idx;
+	key_value_ptr->key	 = key;
+	key_value_ptr->value = value;
+	++_count;
 }
 
 bool robin_hood_hashmap::bucket::empty() const

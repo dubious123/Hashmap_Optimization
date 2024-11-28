@@ -33,6 +33,8 @@ struct robin_hood_hashmap
 
 	void _resize();
 
+	void _insert_new(uint64_t key, uint64_t value);
+
 	key_value_pair* _key_value_entry_ptr(auto nth_mem_block, auto idx) const;
 
 	key_value_pair* _find_key_value_pair(auto& key, __m256i&& needle_cmp_res, auto nth_header_block) const;
