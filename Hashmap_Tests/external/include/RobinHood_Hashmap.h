@@ -25,8 +25,6 @@ struct robin_hood_hashmap
 
 	void _resize();
 
-	void _insert(const bucket&& bkt);
-
 	struct bucket
 	{
 		uint64_t key;

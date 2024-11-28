@@ -2,11 +2,11 @@
 #include <cassert>
 #include "RobinHood_Hashmap.h"
 
-// todo valid bit -> most significant bit ( resize opt)
+// todo valid bit -> most significant bit (resize opt)
 
-#define UINT_SIZE (sizeof(header_type) + sizeof(key_value_pair))
+constexpr const auto UINT_SIZE = sizeof(robin_hood_hashmap::header_type) + sizeof(robin_hood_hashmap::key_value_pair);
 
-#define MEM_BLOCK_SIZE ((sizeof(__m256i) << 1) + (sizeof(key_value_pair) << 5))
+constexpr const auto MEM_BLOCK_SIZE = ((sizeof(__m256i) << 1) + (sizeof(robin_hood_hashmap::key_value_pair) << 5));
 
 static const char LogTable256[256] = {
 #define LT(n) n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n
@@ -186,12 +186,52 @@ uint32_t robin_hood_hashmap::size() const
 
 void robin_hood_hashmap::insert(uint64_t key, uint64_t value)
 {
-	if (_count == _capacity)
+	auto  home				   = key & _bit_mask;
+	auto  home_index		   = home & 0x1f;
+	auto  nth_header_block	   = home >> 5;
+	auto* header_block_address = (__m256i*)((uint8_t*)_memory + nth_header_block * MEM_BLOCK_SIZE);
+
+	// find
 	{
-		_resize();
+		auto res_ptr = _find_key_value_pair(key, _mm256_cmpeq_epi16(*(header_block_address), get_first_needle(home_index, key)), nth_header_block);
+
+		if (res_ptr != nullptr)
+		{
+			res_ptr->value = value;
+			return;
+		}
+
+		res_ptr = _find_key_value_pair_second(key, _mm256_cmpeq_epi16(*(header_block_address + 1), get_second_needle(home_index, key)), nth_header_block);
+
+
+		if (res_ptr != nullptr)
+		{
+			res_ptr->value = value;
+			return;
+		}
 	}
 
-	_insert(key, value);
+	auto cmp_res   = _mm256_cmpeq_epi16(*header_block_address, _mm256_setzero_si256());
+	auto empty_idx = get_first_byte_index(cmp_res) >> 1;
+
+	if (empty_idx == 16)
+	{
+		// check header 16~31
+		cmp_res	  = _mm256_cmpeq_epi16(*(header_block_address + 1), _mm256_setzero_si256());
+		empty_idx = 16 + (get_first_byte_index(cmp_res) >> 1);
+		if (empty_idx == 32)
+		{
+			_resize();
+			insert(key, value);
+			return;
+		}
+	}
+
+	*((uint16_t*)(header_block_address) + empty_idx) = make_header(empty_idx - home_index, key, 1);
+
+	auto* key_value_ptr	 = (key_value_pair*)(header_block_address + 2) + empty_idx;
+	key_value_ptr->key	 = key;
+	key_value_ptr->value = value;
 	++_count;
 }
 
@@ -202,20 +242,22 @@ uint64_t* robin_hood_hashmap::find(uint64_t key) const
 	auto  nth_header_block	   = home >> 5;
 	auto* header_block_address = (__m256i*)((uint8_t*)_memory + nth_header_block * MEM_BLOCK_SIZE);
 
-	auto d		 = get_first_needle(home_index, key);
-	auto res_ptr = _find_key_value_pair(key, _mm256_cmpeq_epi16(*(__m256i*)(header_block_address), d), nth_header_block);
+	auto res_ptr = _find_key_value_pair(key, _mm256_cmpeq_epi16(*(__m256i*)(header_block_address), get_first_needle(home_index, key)), nth_header_block);
 
-	if (res_ptr == nullptr)
+	if (res_ptr)
 	{
-		res_ptr = _find_key_value_pair_second(key, _mm256_cmpeq_epi16(*(__m256i*)(header_block_address + 1), get_second_needle(home_index, key)), nth_header_block);
+		return &res_ptr->value;
 	}
 
-	if (res_ptr == nullptr)
+	res_ptr = _find_key_value_pair_second(key, _mm256_cmpeq_epi16(*(__m256i*)(header_block_address + 1), get_second_needle(home_index, key)), nth_header_block);
+
+
+	if (res_ptr)
 	{
-		return nullptr;
+		return &res_ptr->value;
 	}
 
-	return &res_ptr->value;
+	return nullptr;
 }
 
 uint64_t robin_hood_hashmap::erase(uint64_t key)
@@ -266,6 +308,7 @@ void robin_hood_hashmap::_resize()
 {
 	auto  _backup_capacity = _capacity;
 	auto* _backup_memory   = _memory;
+	auto  _backup_size	   = _count;
 	auto  memory_block_num = _capacity >> 5;	// capacity / 32
 
 	_capacity	= _capacity << 1;				// todo
@@ -283,7 +326,7 @@ void robin_hood_hashmap::_resize()
 		while (not_empty_idx < 16)
 		{
 			auto* pair_ptr = (key_value_pair*)((uint8_t*)_backup_memory + i * MEM_BLOCK_SIZE + 64) + not_empty_idx;
-			_insert(pair_ptr->key, pair_ptr->value);
+			insert(pair_ptr->key, pair_ptr->value);
 			*((uint16_t*)&haystack + not_empty_idx) = (uint16_t)0;
 
 			cmp_res		  = _mm256_cmpeq_epi16(haystack, _mm256_set1_epi16(1));
@@ -296,7 +339,7 @@ void robin_hood_hashmap::_resize()
 		while (not_empty_idx < 16)
 		{
 			auto* pair_ptr = (key_value_pair*)((uint8_t*)_backup_memory + i * MEM_BLOCK_SIZE + 64) + not_empty_idx + 16;
-			_insert(pair_ptr->key, pair_ptr->value);
+			insert(pair_ptr->key, pair_ptr->value);
 			*((uint16_t*)&haystack + not_empty_idx) = (uint16_t)0;
 
 			cmp_res		  = _mm256_cmpeq_epi16(haystack, _mm256_set1_epi16(1));
@@ -304,59 +347,8 @@ void robin_hood_hashmap::_resize()
 		}
 	}
 
+	_count = _backup_size;
 	free(_backup_memory);
-}
-
-void robin_hood_hashmap::_insert(const uint64_t& key, const uint64_t& value)
-{
-	auto* val_ptr = robin_hood_hashmap::find(key);
-	if (val_ptr != nullptr)
-	{
-		*val_ptr = value;
-		//*(val_ptr - 1) = key;
-		return;
-	}
-
-	auto  home				   = key & _bit_mask;
-	auto  home_idx			   = home & 0x1f;
-	auto  nth_header_block	   = home >> 5;
-	auto* header_block_address = (__m256i*)((uint8_t*)_memory + nth_header_block * MEM_BLOCK_SIZE);
-	auto  cmp_res			   = _mm256_cmpeq_epi16(*header_block_address, _mm256_setzero_si256());
-	auto  empty_idx			   = get_first_byte_index(cmp_res) >> 1;
-
-	if (empty_idx == 16)
-	{
-		// check header 16~31
-		cmp_res	  = _mm256_cmpeq_epi16(*(header_block_address + 1), _mm256_setzero_si256());
-		empty_idx = 16 + (get_first_byte_index(cmp_res) >> 1);
-	}
-
-	if (empty_idx == 32)
-	{
-		_resize();
-		home				 = key & _bit_mask;
-		home_idx			 = home & 0x1f;
-		nth_header_block	 = home >> 5;
-		header_block_address = (__m256i*)((uint8_t*)_memory + nth_header_block * MEM_BLOCK_SIZE);
-		cmp_res				 = _mm256_cmpeq_epi16(*header_block_address, _mm256_setzero_si256());
-		empty_idx			 = get_first_byte_index(cmp_res) >> 1;
-
-		if (empty_idx == 16)
-		{
-			// check header 16~31
-			cmp_res	  = _mm256_cmpeq_epi16(*(header_block_address + 1), _mm256_setzero_si256());
-			empty_idx = 16 + (get_first_byte_index(cmp_res) >> 1);
-
-			assert(empty_idx < 31);
-		}
-	}
-
-
-	*((uint16_t*)(header_block_address) + empty_idx) = make_header(empty_idx - home_idx, key, 1);
-
-	auto* key_value_ptr	 = (key_value_pair*)(header_block_address + 2) + empty_idx;
-	key_value_ptr->key	 = key;
-	key_value_ptr->value = value;
 }
 
 bool robin_hood_hashmap::bucket::empty() const
