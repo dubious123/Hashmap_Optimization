@@ -274,7 +274,7 @@ void run_test_robinhood_det()
 		LOG("it_num : {} test start", it_num)
 
 		auto ref_map  = std::unordered_map<uint64_t, uint64_t>();
-		auto test_map = robin_hood_hashmap();
+		auto test_map = robin_hood_hashmap<uint64_t, uint64_t>();
 		auto res	  = true;
 		fill(it_num, gen, dist, test_map, ref_map);
 
@@ -348,7 +348,7 @@ void run_test_robinhood_rand()
 	auto operation_dice_2 = std::uniform_int_distribution<int>(0, 10 - 1);
 	auto dist			  = std::uniform_int_distribution<uint64_t>(0, 0xffff'ffff'ffff'ffff);
 	auto ref_map		  = std::unordered_map<uint64_t, uint64_t>();
-	auto test_map		  = robin_hood_hashmap();
+	auto test_map		  = robin_hood_hashmap<uint64_t, uint64_t>();
 	auto key_set		  = std::unordered_set<uint64_t>();
 	LOG("random test start, seed : {}", seed);
 	LOG("Scenario 1 begin");
@@ -499,7 +499,7 @@ int main()
 	std::cout << "Hello World!\n";
 	auto sss = em(0);
 
-	robin_hood_hashmap					   map;
+	robin_hood_hashmap<uint64_t, uint64_t> map;
 	std::unordered_map<uint64_t, uint64_t> ref_map;
 
 	assert(test_count(map, ref_map));
@@ -534,14 +534,14 @@ int main()
 	run_test_robinhood_det();
 	run_test_robinhood_rand();
 
-	// auto map2 = robin_hood_hashmap();
+	// auto map2 = robin_hood_hashmap<uint64_t, uint64_t>();
 	// for (uint64_t i = 0; i < 100000000; ++i)
 	//{
 	//	map2[i] = i;
 	// }
 
 	// map2.clear();
-	//   auto check_sum = 0;
+	// auto check_sum = 0;
 
 	// for (int i : std::views::iota(1, 100'000))
 	//{

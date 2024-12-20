@@ -27,13 +27,46 @@
 #define RUN_100M
 #define RUN_FIND
 
-#define INSERT_NUM 100'000'000
+#define INSERT_NUM 10'000'000
 #define FIND_NUM   500'000'000
 
 static constexpr uint64_t SEED	= 19990827;
 static constexpr uint64_t SEED2 = 2020024357;
 
 auto results = std::vector<uint64_t>();
+
+template <typename k>
+struct temp_hash
+{
+	uint64_t operator()(k key) const
+	{
+		return key;
+	}
+};
+
+struct big_struct
+{
+	big_struct(uint64_t v = 0)
+	{
+		_v0 = v;
+		_v1 = v;
+		_v2 = v;
+		_v3 = v;
+	}
+
+	operator uint64_t() const { return _v0; }
+
+	uint64_t _v0;
+	uint64_t _v1;
+	uint64_t _v2;
+	uint64_t _v3;
+};
+
+using key_type	   = uint64_t;
+using value_type   = big_struct;
+using hash		   = temp_hash<key_type>;
+using std_map_type = std::unordered_map<key_type, value_type, hash>;
+using my_map_type  = robin_hood_hashmap<key_type, value_type, hash>;
 
 void clear_file(std::string path)
 {
@@ -119,7 +152,7 @@ void run_benchmark_clear_100M(auto& map)
 void run_benchmark_std_find_T100(int element, int attempts, uint64_t expected)
 {
 	auto num_found = 0;
-	auto std_map   = std::unordered_map<uint64_t, uint64_t>();
+	auto std_map   = std_map_type();
 	auto rng	   = sfc64(SEED);
 	auto rng2	   = sfc64(SEED2);
 	for (int i = 0; i < element; ++i)
@@ -148,7 +181,7 @@ void run_benchmark_std_find_T100(int element, int attempts, uint64_t expected)
 void run_benchmark_std_find_T75(int element, int attempts, uint64_t expected)
 {
 	auto num_found = 0;
-	auto std_map   = std::unordered_map<uint64_t, uint64_t>();
+	auto std_map   = std_map_type();
 	auto rng	   = sfc64(SEED);
 	auto rng2	   = sfc64(SEED2);
 	for (int i = 0; i < element; ++i)
@@ -199,7 +232,7 @@ void run_benchmark_std_find_T75(int element, int attempts, uint64_t expected)
 void run_benchmark_std_find_T50(int element, int attempts, uint64_t expected)
 {
 	auto num_found = 0;
-	auto std_map   = std::unordered_map<uint64_t, uint64_t>();
+	auto std_map   = std_map_type();
 	auto rng	   = sfc64(SEED);
 	auto rng2	   = sfc64(SEED2);
 	for (int i = 0; i < element; ++i)
@@ -250,7 +283,7 @@ void run_benchmark_std_find_T50(int element, int attempts, uint64_t expected)
 void run_benchmark_std_find_T25(int element, int attempts, uint64_t expected)
 {
 	auto num_found = 0;
-	auto std_map   = std::unordered_map<uint64_t, uint64_t>();
+	auto std_map   = std_map_type();
 	auto rng	   = sfc64(SEED);
 	auto rng2	   = sfc64(SEED2);
 	for (int i = 0; i < element; ++i)
@@ -301,7 +334,7 @@ void run_benchmark_std_find_T25(int element, int attempts, uint64_t expected)
 void run_benchmark_std_find_T0(int element, int attempts, uint64_t expected)
 {
 	auto num_found = 0;
-	auto std_map   = std::unordered_map<uint64_t, uint64_t>();
+	auto std_map   = std_map_type();
 	auto rng	   = sfc64(SEED);
 	auto rng2	   = sfc64(SEED2);
 	for (int i = 0; i < element; ++i)
@@ -330,7 +363,7 @@ void run_benchmark_std_find_T0(int element, int attempts, uint64_t expected)
 void run_benchmark_rbh_find_T100(int element, int attempts, uint64_t expected)
 {
 	auto num_found = 0;
-	auto rbh_map   = robin_hood_hashmap();
+	auto rbh_map   = my_map_type();
 	auto rng	   = sfc64(SEED);
 	auto rng2	   = sfc64(SEED2);
 	for (int i = 0; i < element; ++i)
@@ -359,7 +392,7 @@ void run_benchmark_rbh_find_T100(int element, int attempts, uint64_t expected)
 void run_benchmark_rbh_find_T75(int element, int attempts, uint64_t expected)
 {
 	auto num_found = 0;
-	auto rbh_map   = robin_hood_hashmap();
+	auto rbh_map   = my_map_type();
 	auto rng	   = sfc64(SEED);
 	auto rng2	   = sfc64(SEED2);
 	for (int i = 0; i < element; ++i)
@@ -410,7 +443,7 @@ void run_benchmark_rbh_find_T75(int element, int attempts, uint64_t expected)
 void run_benchmark_rbh_find_T50(int element, int attempts, uint64_t expected)
 {
 	auto num_found = 0;
-	auto rbh_map   = robin_hood_hashmap();
+	auto rbh_map   = my_map_type();
 	auto rng	   = sfc64(SEED);
 	auto rng2	   = sfc64(SEED2);
 	for (int i = 0; i < element; ++i)
@@ -461,7 +494,7 @@ void run_benchmark_rbh_find_T50(int element, int attempts, uint64_t expected)
 void run_benchmark_rbh_find_T25(int element, int attempts, uint64_t expected)
 {
 	auto num_found = 0;
-	auto rbh_map   = robin_hood_hashmap();
+	auto rbh_map   = my_map_type();
 	auto rng	   = sfc64(SEED);
 	auto rng2	   = sfc64(SEED2);
 	for (int i = 0; i < element; ++i)
@@ -512,7 +545,7 @@ void run_benchmark_rbh_find_T25(int element, int attempts, uint64_t expected)
 void run_benchmark_rbh_find_T0(int element, int attempts, uint64_t expected)
 {
 	auto num_found = 0;
-	auto rbh_map   = robin_hood_hashmap();
+	auto rbh_map   = my_map_type();
 	auto rng	   = sfc64(SEED);
 	auto rng2	   = sfc64(SEED2);
 	for (int i = 0; i < element; ++i)
@@ -597,7 +630,7 @@ int main(int argc, char** argv)
 
 #ifdef RUN_100M
 	{
-		auto std_map = std::unordered_map<uint64_t, uint64_t>();
+		auto std_map = std::unordered_map<uint64_t, big_struct>();
 		run_benchmark_insert_100M(std_map);
 		{
 			auto std_copied_map = std_map;
@@ -607,7 +640,7 @@ int main(int argc, char** argv)
 		run_benchmark_clear_100M(std_map);
 	}
 	{
-		auto robin_hood_map = robin_hood_hashmap();
+		auto robin_hood_map = robin_hood_hashmap<uint64_t, big_struct, temp_hash<uint64_t>>();
 		run_benchmark_insert_100M(robin_hood_map);
 		{
 			auto rbh_copied_map = robin_hood_map;
